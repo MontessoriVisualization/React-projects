@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import useFetch from "../layouts/Fetch.js";
 import Card from "../layouts/card.jsx";
 import DropDown from "../layouts/DropDown.jsx";
+import LoadingScreen from "../layouts/LodingScreen.jsx";
 
 import { GiQuill } from "react-icons/gi";
 import { FaSearch } from "react-icons/fa";
@@ -15,6 +16,7 @@ const Filter = () => {
   const [filters, setFilters] = useState({});
   const [ingredient, setIngredient] = useState("");
   const [resultRecNum, setResultRecNum] = useState(0);
+  const navigate = useNavigate();
 
   const {
     data: countryData,
@@ -201,6 +203,14 @@ const Filter = () => {
     }
   };
 
+  const handleCardClick = (mealId) => {
+    navigate(`/recipe/${mealId}`);
+  };
+
+  if (loading && data.length === 0) {
+    return <LoadingScreen fullScreen={true} />;
+  }
+
   return (
     <div className="px-8 py-4">
       <div>
@@ -255,8 +265,14 @@ const Filter = () => {
         </div>
       </div>
       <div className="grid grid-cols-4 gap-6 ">
-        {loading && <p>Loading…</p>}
-        {error && <p>Error loading meals</p>}
+        {loading && <LoadingScreen />}
+        {error && (
+          <div className="col-span-4 text-center py-20">
+            <p className="text-red-600 font-semibold text-lg">
+              Error loading meals. Please try again.
+            </p>
+          </div>
+        )}
         {!loading &&
           !error &&
           data?.[0]?.meals?.map((meal) => {
@@ -270,7 +286,7 @@ const Filter = () => {
                 description="Featured Recipe"
                 loading={false}
                 height={"94"}
-                OnClick={() => {}}
+                OnClick={() => handleCardClick(item.idMeal)}
               />
             );
           })}

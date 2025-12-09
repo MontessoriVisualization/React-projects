@@ -2,12 +2,15 @@ import React from "react";
 import { FaLeaf, FaClock, FaUsers, FaStar } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import Card from "../layouts/card.jsx";
+import LoadingScreen from "../layouts/LodingScreen.jsx";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Main = () => {
   const [meals, setMeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchData() {
@@ -29,6 +32,14 @@ const Main = () => {
     }
     fetchData();
   }, []);
+
+  const handleCardClick = (mealId) => {
+    navigate(`/recipe/${mealId}`);
+  };
+
+  if (loading) {
+    return <LoadingScreen fullScreen={true} />;
+  }
 
   return (
     <main className="bg-white">
@@ -54,14 +65,16 @@ const Main = () => {
               </button>
             </div>
           </div>
-          <Card
-            title={meals[0]?.strMeal}
-            image={meals[0]?.strMealThumb}
-            description="Featured Recipe"
-            loading={loading}
-            height={"96"}
-            OnClick={() => {}}
-          ></Card>
+          {!loading && meals[0] && (
+            <Card
+              title={meals[0]?.strMeal}
+              image={meals[0]?.strMealThumb}
+              description="Featured Recipe"
+              loading={false}
+              height={"96"}
+              OnClick={() => handleCardClick(meals[0]?.idMeal)}
+            ></Card>
+          )}
         </div>
       </section>
 
@@ -80,60 +93,94 @@ const Main = () => {
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8 h-full">
           {/* Large Card - Left Side */}
           <div className="flex-[1] flex min-h-96">
-            <Card
-              title={meals[1]?.strMeal}
-              image={meals[1]?.strMealThumb}
-              description={meals[1]?.strInstructions.slice(0, 100) + "..."}
-              loading={loading}
-              height={"auto"}
-              OnClick={() => {}}
-            ></Card>
+            {loading ? (
+              <LoadingScreen />
+            ) : (
+              meals[1] && (
+                <Card
+                  title={meals[1]?.strMeal}
+                  image={meals[1]?.strMealThumb}
+                  description={meals[1]?.strInstructions.slice(0, 100) + "..."}
+                  loading={false}
+                  height={"auto"}
+                  OnClick={() => handleCardClick(meals[1]?.idMeal)}
+                ></Card>
+              )
+            )}
           </div>
 
           {/* Small Cards - Right Side */}
           <div className="flex-1 flex flex-col gap-8">
             {/* Top Row */}
             <div className="flex gap-8 flex-1 min-h-40">
-              <Card
-                title={meals[2]?.strMeal}
-                image={meals[2]?.strMealThumb}
-                description={meals[2]?.strInstructions.slice(0, 50) + "..."}
-                loading={loading}
-                size="0.8"
-                height={"40"}
-                OnClick={() => {}}
-              ></Card>
-              <Card
-                title={meals[3]?.strMeal}
-                image={meals[3]?.strMealThumb}
-                description={meals[3]?.strInstructions.slice(0, 50) + "..."}
-                loading={loading}
-                size="0.8"
-                height={"40"}
-                OnClick={() => {}}
-              ></Card>
+              {loading ? (
+                <LoadingScreen />
+              ) : (
+                <>
+                  {meals[2] && (
+                    <Card
+                      title={meals[2]?.strMeal}
+                      image={meals[2]?.strMealThumb}
+                      description={
+                        meals[2]?.strInstructions.slice(0, 50) + "..."
+                      }
+                      loading={false}
+                      size="0.8"
+                      height={"40"}
+                      OnClick={() => handleCardClick(meals[2]?.idMeal)}
+                    ></Card>
+                  )}
+                  {meals[3] && (
+                    <Card
+                      title={meals[3]?.strMeal}
+                      image={meals[3]?.strMealThumb}
+                      description={
+                        meals[3]?.strInstructions.slice(0, 50) + "..."
+                      }
+                      loading={false}
+                      size="0.8"
+                      height={"40"}
+                      OnClick={() => handleCardClick(meals[3]?.idMeal)}
+                    ></Card>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Bottom Row */}
             <div className="flex gap-8 flex-1 min-h-40">
-              <Card
-                title={meals[4]?.strMeal}
-                image={meals[4]?.strMealThumb}
-                description={meals[4]?.strInstructions.slice(0, 50) + "..."}
-                loading={loading}
-                size="0.8"
-                height={"40"}
-                OnClick={() => {}}
-              ></Card>
-              <Card
-                title={meals[5]?.strMeal}
-                image={meals[5]?.strMealThumb}
-                description={meals[5]?.strInstructions.slice(0, 50) + "..."}
-                loading={loading}
-                size="0.8"
-                height={"40"}
-                OnClick={() => {}}
-              ></Card>
+              {loading ? (
+                <LoadingScreen />
+              ) : (
+                <>
+                  {meals[4] && (
+                    <Card
+                      title={meals[4]?.strMeal}
+                      image={meals[4]?.strMealThumb}
+                      description={
+                        meals[4]?.strInstructions.slice(0, 50) + "..."
+                      }
+                      loading={false}
+                      size="0.8"
+                      height={"40"}
+                      OnClick={() => handleCardClick(meals[4]?.idMeal)}
+                    ></Card>
+                  )}
+                  {meals[5] && (
+                    <Card
+                      title={meals[5]?.strMeal}
+                      image={meals[5]?.strMealThumb}
+                      description={
+                        meals[5]?.strInstructions.slice(0, 50) + "..."
+                      }
+                      loading={false}
+                      size="0.8"
+                      height={"40"}
+                      OnClick={() => handleCardClick(meals[5]?.idMeal)}
+                    ></Card>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
