@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import useFetch from "../layouts/Fetch.js";
 import Card from "../layouts/card.jsx";
 import DropDown from "../layouts/DropDown.jsx";
@@ -6,15 +6,17 @@ import DropDown from "../layouts/DropDown.jsx";
 import { GiQuill } from "react-icons/gi";
 import { FaSearch } from "react-icons/fa";
 import axios from "axios";
+import { useNavigate, useParams } from "react-router-dom";
 
 const Filter = () => {
+  // const {id} = useParams();
+  // const nav = useNavigate();
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [totalFilters, setTotalFilters] = useState({});
   const [filters, setFilters] = useState({});
-  const [namCon, setnamCon] = useState(
-    "American" /* Default country filter value */
-  );
+  const [ingredient, setIngredient] = useState("");
 
   const {
     data: countryData,
@@ -34,37 +36,110 @@ const Filter = () => {
     error: ingError,
   } = useFetch("https://www.themealdb.com/api/json/v1/1/list.php?i=list", 0);
 
+  // Fetch default meals by American cuisine on component mount
   useEffect(() => {
-    const CountryMeal = async () => {
+    const fetchDefaultMeals = async () => {
       try {
         const response = await axios.get(
-          `https://www.themealdb.com/api/json/v1/1/filter.php?a=${namCon}`
+          `https://www.themealdb.com/api/json/v1/1/filter.php?a=American`
         );
-        console.log("Meals for country", namCon, response.data);
         setData([response.data]);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching meals by country:", error);
+        console.error("Error fetching default meals:", error);
         setError(error);
         setLoading(false);
       }
     };
-    CountryMeal();
-  }, [namCon]);
+    fetchDefaultMeals();
+  }, []);
 
-  const filterclass = () => {
-    console.log(filters);
-    if (filters.Country) {
-      console.log("Country filter applied:", filters.Country);
-      for (const [key, value] of Object.entries(filters.Country)) {
-        if (value) {
-          console.log(` ${key}`);
-          setnamCon(key);
-        }
-      }
+  const searchInd = (value) => {
+    console.log("Searching ingredient...");
+    console.log("Input value:", value);
+    if (ingLoading) return;
+
+    console.log("Input query:", query);
+
+    if (!query) return;
+    setIngredient(query);
+    console.log("Searching by ingredient:", ingredient);
+  };
+  useEffect(() => {
+    // const fetchByIngredient = async () => {
+    // try{
+    // }
+    // }
+  }, [ingredient]);
+
+  const filterclass = async () => {
+    console.log("Filters:", filters);
+
+    // Get selected countries and categories
+    const selectedCountries = filters.Country
+      ? Object.entries(filters.Country)
+          .filter(([, value]) => value)
+          .map(([key]) => key)
+      : [];
+
+    const selectedCategories = filters.Category
+      ? Object.entries(filters.Category)
+          .filter(([, value]) => value)
+          .map(([key]) => key)
+      : [];
+
+    console.log("Selected Countries:", selectedCountries);
+    console.log("Selected Categories:", selectedCategories);
+
+    if (selectedCountries.length === 0 || selectedCategories.length === 0) {
+      console.log("Please select both Country and Category");
+      return;
     }
-    if (filters.Category) {
-      console.log("Category filter applied:", filters.Category);
+
+    setLoading(true);
+    try {
+      // Fetch meals by country
+      const countryPromises = selectedCountries.map((country) =>
+        axios.get(
+          `https://www.themealdb.com/api/json/v1/1/filter.php?a=${country}`
+        )
+      );
+      const countryResponses = await Promise.all(countryPromises);
+      const countryMeals = countryResponses.flatMap(
+        (res) => res.data.meals || []
+      );
+      console.log("Meals from countries:", countryMeals.length);
+
+      // Fetch meals by category
+      const categoryPromises = selectedCategories.map((category) =>
+        axios.get(
+          `https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`
+        )
+      );
+      const categoryResponses = await Promise.all(categoryPromises);
+      const categoryMeals = categoryResponses.flatMap(
+        (res) => res.data.meals || []
+      );
+      console.log("Meals from categories:", categoryMeals.length);
+
+      // INTERSECTION: Find meals that exist in BOTH country AND category
+      const countryMealIds = new Set(countryMeals.map((meal) => meal.idMeal));
+      const intersectionMeals = categoryMeals.filter((meal) =>
+        countryMealIds.has(meal.idMeal)
+      );
+
+      console.log("Meals matching BOTH filters:", intersectionMeals.length);
+
+      if (intersectionMeals.length === 0) {
+        console.log("No meals found matching both filters");
+      }
+
+      setData([{ meals: intersectionMeals }]);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error filtering meals:", error);
+      setError(error);
+      setLoading(false);
     }
   };
 
@@ -79,7 +154,12 @@ const Filter = () => {
           {/* search bar by ingredient */}
 
           <div className="border flex relative justify-between py-2 rounded-md items-center  w-[194px] h-[35px] px-3.5 ">
-            <input type="search" placeholder="Search by ingredient" />
+            <input
+              type="search"
+              placeholder="Search by ingredient"
+              onKeyDown={(e) => e.key === "Enter" && searchInd(e.value)}
+              className="outline-none"
+            />
 
             <FaSearch></FaSearch>
           </div>
@@ -123,7 +203,7 @@ const Filter = () => {
         {!loading &&
           !error &&
           data?.[0]?.meals?.map((meal) => {
-            console.log("meal", meal);
+            // console.log("meal", meal);
             const item = meal;
             if (!item) return null;
             return (

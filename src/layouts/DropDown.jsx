@@ -15,10 +15,6 @@ const DropDown = ({
   const [selectedItems, setSelectedItems] = useState({});
   const containerRef = useRef(null);
 
-  function HandelClick() {
-    setIsOpen((prev) => !prev);
-  }
-
   const HandelCheckbox = (value) => {
     return (e) => {
       setSelectedItems((prev) => {
@@ -54,7 +50,7 @@ const DropDown = ({
     <div ref={containerRef}>
       <div
         className="border flex relative justify-between py-2 rounded-md items-center  w-[194px] h-[35px] px-3.5 "
-        onClick={HandelClick}
+        onClick={() => setIsOpen((prev) => !prev)}
       >
         <span>{title}</span>
         {isOpen ? <FaAngleUp></FaAngleUp> : <FaAngleDown></FaAngleDown>}
