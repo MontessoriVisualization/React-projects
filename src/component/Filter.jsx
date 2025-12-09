@@ -9,14 +9,12 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 
 const Filter = () => {
-  // const {id} = useParams();
-  // const nav = useNavigate();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [totalFilters, setTotalFilters] = useState({});
   const [filters, setFilters] = useState({});
   const [ingredient, setIngredient] = useState("");
+  const [resultRecNum, setResultRecNum] = useState(0);
 
   const {
     data: countryData,
@@ -44,6 +42,7 @@ const Filter = () => {
           `https://www.themealdb.com/api/json/v1/1/filter.php?a=American`
         );
         setData([response.data]);
+        setResultRecNum(response.data.meals?.length || 0);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching default meals:", error);
@@ -54,26 +53,9 @@ const Filter = () => {
     fetchDefaultMeals();
   }, []);
 
-  const searchInd = (value) => {
-    console.log("Searching ingredient...");
-    console.log("Input value:", value);
-    if (ingLoading) return;
-
-    console.log("Input query:", query);
-
-    if (!query) return;
-    setIngredient(query);
-    console.log("Searching by ingredient:", ingredient);
-  };
-  useEffect(() => {
-    // const fetchByIngredient = async () => {
-    // try{
-    // }
-    // }
-  }, [ingredient]);
-
   const filterclass = async () => {
     console.log("Filters:", filters);
+    console.log("Ingredient:", ingredient);
 
     // Get selected countries and categories
     const selectedCountries = filters.Country
@@ -88,50 +70,126 @@ const Filter = () => {
           .map(([key]) => key)
       : [];
 
+    // Get selected ingredients
+    const selectedIngredients = ingredient
+      .toLowerCase()
+      .trim()
+      .split(",")
+      .map((ing) => ing.trim())
+      .filter((ing) => ing.length > 0);
+
     console.log("Selected Countries:", selectedCountries);
     console.log("Selected Categories:", selectedCategories);
+    console.log("Selected Ingredients:", selectedIngredients);
 
-    if (selectedCountries.length === 0 || selectedCategories.length === 0) {
-      console.log("Please select both Country and Category");
+    // Check if at least one filter is selected
+    if (
+      selectedCountries.length === 0 &&
+      selectedCategories.length === 0 &&
+      selectedIngredients.length === 0
+    ) {
+      alert(
+        "Please select at least one filter (Country, Category, or Ingredient)"
+      );
       return;
     }
 
     setLoading(true);
     try {
+      let mealArrays = [];
+
       // Fetch meals by country
-      const countryPromises = selectedCountries.map((country) =>
-        axios.get(
-          `https://www.themealdb.com/api/json/v1/1/filter.php?a=${country}`
-        )
-      );
-      const countryResponses = await Promise.all(countryPromises);
-      const countryMeals = countryResponses.flatMap(
-        (res) => res.data.meals || []
-      );
-      console.log("Meals from countries:", countryMeals.length);
+      if (selectedCountries.length > 0) {
+        const countryPromises = selectedCountries.map((country) =>
+          axios.get(
+            `https://www.themealdb.com/api/json/v1/1/filter.php?a=${country}`
+          )
+        );
+        const countryResponses = await Promise.all(countryPromises);
+        const countryMeals = countryResponses.flatMap(
+          (res) => res.data.meals || []
+        );
+        console.log("Meals from countries:", countryMeals.length);
+        mealArrays.push(countryMeals);
+      }
 
       // Fetch meals by category
-      const categoryPromises = selectedCategories.map((category) =>
-        axios.get(
-          `https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`
-        )
-      );
-      const categoryResponses = await Promise.all(categoryPromises);
-      const categoryMeals = categoryResponses.flatMap(
-        (res) => res.data.meals || []
-      );
-      console.log("Meals from categories:", categoryMeals.length);
+      if (selectedCategories.length > 0) {
+        const categoryPromises = selectedCategories.map((category) =>
+          axios.get(
+            `https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`
+          )
+        );
+        const categoryResponses = await Promise.all(categoryPromises);
+        const categoryMeals = categoryResponses.flatMap(
+          (res) => res.data.meals || []
+        );
+        console.log("Meals from categories:", categoryMeals.length);
+        mealArrays.push(categoryMeals);
+      }
 
-      // INTERSECTION: Find meals that exist in BOTH country AND category
-      const countryMealIds = new Set(countryMeals.map((meal) => meal.idMeal));
-      const intersectionMeals = categoryMeals.filter((meal) =>
-        countryMealIds.has(meal.idMeal)
-      );
+      // Fetch meals by ingredient
+      if (selectedIngredients.length > 0) {
+        const ingredientPromises = selectedIngredients.map((ing) =>
+          axios.get(
+            `https://www.themealdb.com/api/json/v1/1/filter.php?i=${ing}`
+          )
+        );
+        const ingredientResponses = await Promise.all(ingredientPromises);
+        const ingredientMeals = ingredientResponses.flatMap(
+          (res) => res.data.meals || []
+        );
+        console.log("Meals from ingredients:", ingredientMeals.length);
 
-      console.log("Meals matching BOTH filters:", intersectionMeals.length);
+        // Find meals that have ALL selected ingredients
+        if (ingredientResponses.length > 1) {
+          const mealArraysIng = ingredientResponses.map(
+            (res) => res.data.meals || []
+          );
+          const commonIngredientMeals = mealArraysIng[0].filter((meal) => {
+            return mealArraysIng.every((meals) =>
+              meals.some((m) => m.idMeal === meal.idMeal)
+            );
+          });
+          console.log(
+            "Meals with ALL ingredients:",
+            commonIngredientMeals.length
+          );
+          mealArrays.push(commonIngredientMeals);
+        } else {
+          mealArrays.push(ingredientMeals);
+        }
+      }
+
+      // INTERSECTION: Find meals that exist in ALL selected filter categories
+      let intersectionMeals = [];
+
+      if (mealArrays.length === 0) {
+        intersectionMeals = [];
+      } else if (mealArrays.length === 1) {
+        intersectionMeals = mealArrays[0];
+      } else {
+        // Filter first array to only include meals that exist in ALL other arrays
+        const firstMealIds = new Set(mealArrays[0].map((meal) => meal.idMeal));
+
+        intersectionMeals = mealArrays[0].filter((meal) => {
+          // Check if this meal exists in ALL other filter results
+          return mealArrays
+            .slice(1)
+            .every((meals) => meals.some((m) => m.idMeal === meal.idMeal));
+        });
+      }
+
+      console.log(
+        "Total meals matching ALL filters:",
+        intersectionMeals.length
+      );
 
       if (intersectionMeals.length === 0) {
-        console.log("No meals found matching both filters");
+        console.log("No meals found matching all selected filters");
+        setResultRecNum(0);
+      } else {
+        setResultRecNum(intersectionMeals.length);
       }
 
       setData([{ meals: intersectionMeals }]);
@@ -148,19 +206,18 @@ const Filter = () => {
       <div>
         <div className="font-mono text-center mt-10 justify-between flex">
           <span className="text-2xl">Browser</span>
-          <span className="text-[0.93em]">2000 recipes</span>
+          <span className="text-[0.93em]">{resultRecNum} recipes</span>
         </div>
         <div className="flex gap-6 py-6 justify-start px-0">
-          {/* search bar by ingredient */}
-
-          <div className="border flex relative justify-between py-2 rounded-md items-center  w-[194px] h-[35px] px-3.5 ">
+          {/* search bar by ingredient - removed Enter key functionality */}
+          <div className="border flex relative justify-between py-2 rounded-md items-center w-[194px] h-[35px] px-3.5 ">
             <input
               type="search"
               placeholder="Search by ingredient"
-              onKeyDown={(e) => e.key === "Enter" && searchInd(e.value)}
+              value={ingredient}
+              onChange={(e) => setIngredient(e.target.value)}
               className="outline-none"
             />
-
             <FaSearch></FaSearch>
           </div>
           <DropDown
@@ -183,10 +240,10 @@ const Filter = () => {
               setFilters((prev) => ({ ...prev, ...ca }));
             }}
           />
-          <button className="border flex relative justify-between py-2 rounded-md items-center  w-[194px] h-[35px] px-3.5 cursor-pointer">
+          <button className="border flex relative justify-between py-2 rounded-md items-center w-[194px] h-[35px] px-3.5 cursor-pointer">
             Random Recipe
           </button>
-          <button className="border flex relative justify-between py-2 rounded-md items-center  w-[194px] h-[35px] px-3.5 cursor-pointer ">
+          <button className="border flex relative justify-between py-2 rounded-md items-center w-[194px] h-[35px] px-3.5 cursor-pointer ">
             Ingredient
           </button>
           <button
@@ -203,7 +260,6 @@ const Filter = () => {
         {!loading &&
           !error &&
           data?.[0]?.meals?.map((meal) => {
-            // console.log("meal", meal);
             const item = meal;
             if (!item) return null;
             return (
