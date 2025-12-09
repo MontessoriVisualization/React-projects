@@ -30,16 +30,13 @@ const DropDown = ({
           },
         };
       });
-      if (e.target.checked) {
-        setconname(value);
-      }
     };
   };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!containerRef.current) return;
-      if (containerRef.current.contains(e.target)) return; // ignore clicks inside
+      if (containerRef.current.contains(e.target)) return;
       setIsOpen(false);
     };
 
@@ -51,10 +48,6 @@ const DropDown = ({
     if (onSelectionChange) {
       onSelectionChange(selectedItems);
     }
-  }, [selectedItems, onSelectionChange]);
-
-  useEffect(() => {
-    console.log("Selected Items:", selectedItems);
   }, [selectedItems]);
 
   return (
