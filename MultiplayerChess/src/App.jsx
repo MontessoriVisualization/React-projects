@@ -1,10 +1,12 @@
 import { Board } from "./component/Board";
 
-import React from 'react'
+import React from "react";
 
- const App = () => {
+const App = () => {
   return (
-<Board/>
-  )
-}
-export default App
+    <main className="flex justify-center items-center h-screen flex-col">
+      <Board></Board>
+    </main>
+  );
+};
+export default App;
