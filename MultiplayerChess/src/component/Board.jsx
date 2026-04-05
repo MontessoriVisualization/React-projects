@@ -1,6 +1,3 @@
-import React from "react";
-
-import { useState } from "react";
 const Cell = ({ value, isgreen }) => {
   return (
     <div
@@ -32,30 +29,21 @@ export const Board = () => {
 
   return (
     <>
-      <div className=" bg-black relative top-0 w-[600px] h-[600px]">
+      <div className=" bg-black relative top-0 w-[600px] h-[600px] flex items-center justify-center">
         <Outerborder dig={row} isrow={true} style={{ top: 0 }} />
         <Outerborder dig={col} style={{ left: 0 }} />
         <div className="board w-[87%] h-[87%] bg-red-300">
           {col.map((colvalue, colindex) => (
             <div
               className="row flex w-full h-1/8"
-              key={Date.toString + colindex}
+              key={`${colvalue},${colindex}`}
             >
               {row.map((rowvalue, rowindex) => (
-                <div
-                  className="wrapper w-1/8 h-full"
-                  key={Date.toString + rowvalue}
-                >
-                  {(rowindex + 1) % 2 == 0 ? (
-                    (colindex + 1) % 2 == 0 ? (
-                      <Cell value={`${colvalue},${rowvalue}`} isgreen={false} />
-                    ) : (
-                      <Cell value={`${colvalue},${rowvalue}`} isgreen={true} />
-                    )
-                  ) : (colindex + 1) % 2 == 0 ? (
-                    <Cell value={`${colvalue},${rowvalue}`} isgreen={true} />
-                  ) : (
+                <div className="wrapper w-1/8 h-full" key={rowvalue}>
+                  {(colindex + rowindex) % 2 == 0 ? (
                     <Cell value={`${colvalue},${rowvalue}`} isgreen={false} />
+                  ) : (
+                    <Cell value={`${colvalue},${rowvalue}`} isgreen={true} />
                   )}
                 </div>
               ))}
