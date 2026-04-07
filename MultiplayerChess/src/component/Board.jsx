@@ -1,38 +1,33 @@
-const Cell = ({ value, isgreen }) => {
-  return (
-    <div
-      className={`bg-green-300 w-full h-full ${isgreen ? "bg-green-200" : "bg-white"} text-center`}
-      value={value}
-    ></div>
-  );
-};
-const Outerborder = ({ dig, isrow = false, style }) => {
-  return (
-    <div
-      className={`bg-black absolute ${isrow ? "w-[600px] px-8.75 h-1/16 flex" : "h-[600px] py-8.75 w-1/16"}`}
-      style={style}
-    >
-      {dig.map((rowvalv, rowind) => (
-        <div
-          className={`cell text-white items-center justify-center flex ${isrow ? "w-1/8" : "h-1/8"}`}
-        >
-          {rowvalv}
-        </div>
-      ))}
-    </div>
-  );
-};
+import {
+  ChessBishop,
+  ChessKnight,
+  ChessPawn,
+  ChessQueen,
+  ChessRook,
+} from "lucide-react";
+
+import { Cell } from "./Cell";
 
 export const Board = () => {
-  const row = [1, 2, 3, 4, 5, 6, 7, 8];
-  const col = ["a", "b", "c", "d", "e", "f", "g", "h"];
+  const row = ["a", "b", "c", "d", "e", "f", "g", "h"];
+  const col = [8, 7, 6, 5, 4, 3, 2, 1];
+  const board = initializeBoard();
+  function initializeBoard() {
+    const board = [];
+    for (let i = 0; i < 8; i++) {
+      const row = [];
+      for (let j = 0; j < 8; j++) {
+        row.push(`${col[i]},${row[j]}`);
+      }
+      board.push(row);
+    }
+    return board;
+  }
 
   return (
     <>
       <div className=" bg-black relative top-0 w-[600px] h-[600px] flex items-center justify-center">
-        <Outerborder dig={row} isrow={true} style={{ top: 0 }} />
-        <Outerborder dig={col} style={{ left: 0 }} />
-        <div className="board w-[87%] h-[87%] bg-red-300">
+        <div className="board w-[100%] h-[100%] bg-red-300">
           {col.map((colvalue, colindex) => (
             <div
               className="row flex w-full h-1/8"
@@ -41,18 +36,25 @@ export const Board = () => {
               {row.map((rowvalue, rowindex) => (
                 <div className="wrapper w-1/8 h-full" key={rowvalue}>
                   {(colindex + rowindex) % 2 == 0 ? (
-                    <Cell value={`${colvalue},${rowvalue}`} isgreen={false} />
+                    <Cell
+                      value={`${colvalue},${rowvalue}`}
+                      isgreen={false}
+                      rowindex={rowindex}
+                      colindex={colindex}
+                    />
                   ) : (
-                    <Cell value={`${colvalue},${rowvalue}`} isgreen={true} />
+                    <Cell
+                      value={`${colvalue},${rowvalue}`}
+                      isgreen={true}
+                      rowindex={rowindex}
+                      colindex={colindex}
+                    />
                   )}
                 </div>
               ))}
             </div>
           ))}
         </div>
-        <Outerborder dig={col} style={{ right: 0 }} />
-
-        <Outerborder dig={row} isrow={true} style={{ bottom: 0 }} />
       </div>
     </>
   );
