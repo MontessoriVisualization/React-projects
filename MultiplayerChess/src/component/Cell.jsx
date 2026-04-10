@@ -1,39 +1,27 @@
 import { motion } from "motion/react";
-
+import { initializePiece } from "./picesinit";
 const Cell = ({ value, isgreen, rowindex, colindex }) => {
-  const chessPieces = {
-    pawn: `https://assets-themes.chess.com/image/pxaxj/150/bp.png`,
-    king: `https://assets-themes.chess.com/image/pxaxj/150/bk.png`,
-    queen: `https://assets-themes.chess.com/image/pxaxj/150/bq.png`,
-    rook: `https://assets-themes.chess.com/image/pxaxj/150/br.png`,
-    bishop: `https://assets-themes.chess.com/image/pxaxj/150/bb.png`,
-    knight: `https://assets-themes.chess.com/image/pxaxj/150/bk.png`,
-  };
-
-  function initializePiece() {
-    if (colindex == 0 || colindex == 7) {
-      return (
-        <img className="w-full h-full p-2" src={chessPieces.rook} alt="rook" />
-      );
-    } else if (colindex == 1 || colindex == 6) {
-      return (
-        <img
-          className="w-full h-full p-2"
-          src={chessPieces.knight}
-          alt="knight"
-        />
-      );
-    }
-  }
-
-  const piece = initializePiece();
+  const piece = initializePiece(colindex, rowindex);
 
   return (
-    <div
+    <motion.div
       className={`relative bg-[#739451] w-full h-full ${isgreen ? "bg-[#739451] text-white" : "bg-white text-[#81b64c]"} text-center`}
       value={value}
     >
-      {piece}
+      {piece && (
+        <motion.img
+          src={piece}
+          alt="chess piece"
+          className="w-3/4 h-3/4 mx-auto my-auto cursor-pointer z-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+          drag
+          dragConstraints={{
+            top: -0,
+            left: -0,
+            right: 0,
+            bottom: 0,
+          }}
+        />
+      )}
 
       {(rowindex == 0 || colindex == 7) && (
         <span className=" text-md font-semibold text-inherit">
@@ -49,7 +37,7 @@ const Cell = ({ value, isgreen, rowindex, colindex }) => {
           )}
         </span>
       )}
-    </div>
+    </motion.div>
   );
 };
 
