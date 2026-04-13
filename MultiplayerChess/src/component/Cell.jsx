@@ -1,11 +1,11 @@
 import { motion } from "motion/react";
-import { initializePiece } from "./picesinit";
-const Cell = ({ value, isgreen, rowindex, colindex }) => {
-  const piece = initializePiece(colindex, rowindex);
 
+const Cell = ({ value, isgreen, rowindex, colindex, piece, isSelected }) => {
   return (
     <motion.div
-      className={`relative bg-[#739451] w-full h-full ${isgreen ? "bg-[#739451] text-white" : "bg-white text-[#81b64c]"} text-center`}
+      className={`relative bg-[#739451] w-full h-full ${
+        isgreen ? "bg-[#739451] text-white" : "bg-white text-[#81b64c]"
+      } text-center ${isSelected ? "border-4 border-blue-500" : ""}`}
       value={value}
     >
       {piece && (
@@ -13,13 +13,6 @@ const Cell = ({ value, isgreen, rowindex, colindex }) => {
           src={piece}
           alt="chess piece"
           className="w-3/4 h-3/4 mx-auto my-auto cursor-pointer z-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-          drag
-          dragConstraints={{
-            top: -0,
-            left: -0,
-            right: 0,
-            bottom: 0,
-          }}
         />
       )}
 

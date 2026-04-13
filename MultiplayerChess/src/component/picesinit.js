@@ -15,43 +15,41 @@ const chessPiecesWhite = {
   knight: `https://assets-themes.chess.com/image/pxaxj/150/wn.png`,
 };
 
-function initializePiece(colindex, rowindex) {
-  if (colindex == 0 || colindex == 7) {
-    switch (rowindex) {
-      case 0:
-        return colindex == 0 ? chessPiecesBlack.rook : chessPiecesWhite.rook;
-      case 1:
-        return colindex == 0
-          ? chessPiecesBlack.knight
-          : chessPiecesWhite.knight;
-      case 2:
-        return colindex == 0
-          ? chessPiecesBlack.bishop
-          : chessPiecesWhite.bishop;
-      case 3:
-        return colindex == 0 ? chessPiecesBlack.queen : chessPiecesWhite.queen;
-
-      case 4:
-        return colindex == 0 ? chessPiecesBlack.king : chessPiecesWhite.king;
-
-      case 5:
-        return colindex == 0
-          ? chessPiecesBlack.bishop
-          : chessPiecesWhite.bishop;
-
-      case 6:
-        return colindex == 0
-          ? chessPiecesBlack.knight
-          : chessPiecesWhite.knight;
-
-      case 7:
-        return colindex == 0 ? chessPiecesBlack.rook : chessPiecesWhite.rook;
-
-      default:
-        return null;
-    }
-  } else if (colindex == 1 || colindex == 6) {
-    return colindex == 1 ? chessPiecesBlack.pawn : chessPiecesWhite.pawn;
-  }
+function initializePiece() {
+  const board = {
+    "0,0": chessPiecesBlack.rook,
+    "0,1": chessPiecesBlack.knight,
+    "0,2": chessPiecesBlack.bishop,
+    "0,3": chessPiecesBlack.queen,
+    "0,4": chessPiecesBlack.king,
+    "0,5": chessPiecesBlack.bishop,
+    "0,6": chessPiecesBlack.knight,
+    "0,7": chessPiecesBlack.rook,
+    "1,0": chessPiecesBlack.pawn,
+    "1,1": chessPiecesBlack.pawn,
+    "1,2": chessPiecesBlack.pawn,
+    "1,3": chessPiecesBlack.pawn,
+    "1,4": chessPiecesBlack.pawn,
+    "1,5": chessPiecesBlack.pawn,
+    "1,6": chessPiecesBlack.pawn,
+    "1,7": chessPiecesBlack.pawn,
+    "6,0": chessPiecesWhite.pawn,
+    "6,1": chessPiecesWhite.pawn,
+    "6,2": chessPiecesWhite.pawn,
+    "6,3": chessPiecesWhite.pawn,
+    "6,4": chessPiecesWhite.pawn,
+    "6,5": chessPiecesWhite.pawn,
+    "6,6": chessPiecesWhite.pawn,
+    "6,7": chessPiecesWhite.pawn,
+    "7,0": chessPiecesWhite.rook,
+    "7,1": chessPiecesWhite.knight,
+    "7,2": chessPiecesWhite.bishop,
+    "7,3": chessPiecesWhite.queen,
+    "7,4": chessPiecesWhite.king,
+    "7,5": chessPiecesWhite.bishop,
+    "7,6": chessPiecesWhite.knight,
+    "7,7": chessPiecesWhite.rook,
+  };
+  return board;
 }
 export { initializePiece };
