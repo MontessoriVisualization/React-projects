@@ -1,10 +1,12 @@
 import { Cell } from "./Cell";
 import { motion } from "framer-motion";
-import { initializePiece } from "./picesinit";
 import { useState } from "react";
+import { useContext } from "react";
+import PieceContext from "../context/piceContext";
 
 export const Board = () => {
-  const [board, setBoard] = useState(initializePiece());
+  const { initPiece, setInitPiece } = useContext(PieceContext);
+
   const [selectedPiece, setSelectedPiece] = useState(null);
   const row = ["a", "b", "c", "d", "e", "f", "g", "h"];
   const col = [8, 7, 6, 5, 4, 3, 2, 1];
@@ -14,29 +16,61 @@ export const Board = () => {
     if (selectedPiece) {
       handleMovePiece(selectedPiece, clickedPosition);
       setSelectedPiece(null);
-    } else if (board[clickedPosition]) {
+    } else if (initPiece[clickedPosition]) {
       setSelectedPiece(clickedPosition);
     }
   };
   const handleMovePiece = (from, to) => {
-    // if (isValidMove(from, to)) {
-    const newBoard = { ...board };
-    newBoard[to] = newBoard[from];
-    delete newBoard[from];
-    setBoard(newBoard);
-    // }
+    if (isValidMove(from, to)) {
+      setInitPiece((prev) => {
+        const newBoard = { ...prev };
+        newBoard[to] = newBoard[from];
+        delete newBoard[from];
+        return newBoard;
+      });
+    }
   };
   const isValidMove = (from, to) => {
-    console.log(`Validating move from ${from} to ${to}`);
-    console.log(`Current board state:`, board[from], board[to]);
-    //   if(board[from].includes("bp") ) {
-    //   return true; // Placeholder, always returns true for now
+    if (from === to) return false; // Prevent moving to the same cell
+    if (!initPiece[from]) return false; // No piece to move
+    if (
+      (initPiece[from].includes(
+        "https://assets-themes.chess.com/image/pxaxj/150/w",
+      ) &&
+        initPiece[to] &&
+        initPiece[to].includes(
+          "https://assets-themes.chess.com/image/pxaxj/150/w",
+        )) ||
+      (initPiece[from].includes(
+        "https://assets-themes.chess.com/image/pxaxj/150/b",
+      ) &&
+        initPiece[to] &&
+        initPiece[to].includes(
+          "https://assets-themes.chess.com/image/pxaxj/150/b",
+        ))
+    ) {
+      return false; // Prevent moving onto a cell occupied by a piece of the same color
+    }
+    if (!isBlocked(from, to)) return false; // Prevent moving through other pieces (for non-knight pieces)
+    console.log("Move from", initPiece[from], "to", initPiece[to]);
+    return true;
   };
+  function isBlocked(from, to) {
+    const fromCol = parseInt(from.split(",")[0]);
+    const fromRow = parseInt(from.split(",")[1]);
+    const toCol = parseInt(to.split(",")[0]);
+    const toRow = parseInt(to.split(",")[1]);
+    const piece = initPiece[from];
+    if (piece.includes("knight")) return false;
+    else {
+      return false; // No pieces blocking the path
+    }
+  }
 
   return (
     <>
       <div className=" bg-black relative top-0 w-[600px] h-[600px] flex items-center justify-center">
-        <motion.div className="board w-[100%] h-[100%] bg-red-300">
+        <motion.div className="initPiece w-[100%] h-[100%] bg-red-300">
           {col.map((colvalue, colindex) => (
             <div
               className="row flex w-full h-1/8"
@@ -54,7 +88,7 @@ export const Board = () => {
                       isgreen={false}
                       rowindex={rowindex}
                       colindex={colindex}
-                      piece={board[`${colindex},${rowindex}`]}
+                      piece={initPiece[`${colindex},${rowindex}`]}
                       isSelected={selectedPiece === `${colindex},${rowindex}`}
                     />
                   ) : (
@@ -63,7 +97,7 @@ export const Board = () => {
                       isgreen={true}
                       rowindex={rowindex}
                       colindex={colindex}
-                      piece={board[`${colindex},${rowindex}`]}
+                      piece={initPiece[`${colindex},${rowindex}`]}
                       isSelected={selectedPiece === `${colindex},${rowindex}`}
                     />
                   )}
