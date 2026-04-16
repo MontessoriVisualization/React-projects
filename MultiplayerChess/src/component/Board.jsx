@@ -35,24 +35,25 @@ export const Board = () => {
     if (!initPiece[from]) return false; // No piece to move
     if (
       (initPiece[from].includes(
-        "https://assets-themes.chess.com/image/pxaxj/150/w",
+        "150/w",
       ) &&
         initPiece[to] &&
         initPiece[to].includes(
-          "https://assets-themes.chess.com/image/pxaxj/150/w",
+          "150/w",
         )) ||
       (initPiece[from].includes(
-        "https://assets-themes.chess.com/image/pxaxj/150/b",
+        "150/b",
       ) &&
         initPiece[to] &&
         initPiece[to].includes(
-          "https://assets-themes.chess.com/image/pxaxj/150/b",
+          "150/b",
         ))
     ) {
       return false; // Prevent moving onto a cell occupied by a piece of the same color
     }
     if (!isBlocked(from, to)) return false; // Prevent moving through other pieces (for non-knight pieces)
-    console.log("Move from", initPiece[from], "to", initPiece[to]);
+    if(!moveAccordingToRules(from, to)) return false; // Prevent moving in a way that violates piece-specific movement rules
+    // console.log("Move from", initPiece[from], "to", initPiece[to]);
     return true;
   };
   function isBlocked(from, to) {
@@ -60,12 +61,60 @@ export const Board = () => {
     const fromRow = parseInt(from.split(",")[1]);
     const toCol = parseInt(to.split(",")[0]);
     const toRow = parseInt(to.split(",")[1]);
+    // (0,0) to (5,5) => (1,1) (2,2) (3,3) (4,4) (5,5)
     const piece = initPiece[from];
-    if (piece.includes("knight")) return false;
+    if (piece.includes("bk.png")||piece.includes("wk.png")) return false;
     else {
-      return false; // No pieces blocking the path
+      for (let i = 1; i < Math.max(Math.abs(toCol - fromCol), Math.abs(toRow - fromRow)); i++) {
+        const intermediateCol = fromCol + i * Math.sign(toCol - fromCol);
+        const intermediateRow = fromRow + i * Math.sign(toRow - fromRow);
+        if (initPiece[`${intermediateCol},${intermediateRow}`]) {
+          console.log("Path blocked at", `${intermediateCol},${intermediateRow}`);
+          return false; // Path is blocked
+        }
+      }
     }
+      return true; // Path is clear
   }
+  function moveAccordingToRules(from, to) {
+    const piece = initPiece[from];
+    const fromCol = parseInt(from.split(",")[0]);
+    const fromRow = parseInt(from.split(",")[1]);
+    const toCol = parseInt(to.split(",")[0]);
+    const toRow = parseInt(to.split(",")[1]);
+    
+    console.log(piece)
+    if(piece.includes('p.png')){
+    
+      if(fromRow==toRow && !initPiece[to]){
+              console.log(fromCol, fromRow, toCol, toRow)
+
+      if((fromCol==1||fromCol==6)&& ((initPiece[from].includes('150/w') && toCol-fromCol==-2) || (initPiece[from].includes('150/b') && toCol-fromCol==2))){
+            return true;
+
+      }
+      
+      else if((initPiece[from].includes('150/w') && toCol-fromCol==-1) || (initPiece[from].includes('150/b') && toCol-fromCol==1)){
+        return true
+        
+      }
+    
+    }
+    if(initPiece[to] &&( (initPiece[from].includes('150/b') && initPiece[to].includes('150/w')) || (initPiece[from].includes('150/w') && initPiece[to].includes('150/b')))){
+      console.log(fromCol, fromRow, toCol, toRow)
+if((piece.includes('150/w') && fromRow-toRow==1 && fromCol-toCol==1) || (piece.includes('150/w') && fromRow-toRow==1 && fromCol-toCol==-1)){
+        
+        return true}
+    
+    }
+        return false
+
+    }
+    
+  return true;
+
+  }
+
 
   return (
     <>
