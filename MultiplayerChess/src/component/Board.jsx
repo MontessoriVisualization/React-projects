@@ -45,10 +45,12 @@ export const Board = () => {
       return false; // Prevent moving onto a cell occupied by a piece of the same color
     }
     if (!isBlocked(from, to)) return false; // Prevent moving through other pieces (for non-knight pieces)
+    if (initPiece[to] && initPiece[to].includes("k.png")) return false; // Prevent capturing the king
     if (!moveAccordingToRules(from, to)) return false; // Prevent moving in a way that violates piece-specific movement rules
     // console.log("Move from", initPiece[from], "to", initPiece[to]);
     return true;
   };
+
   function isBlocked(from, to) {
     const fromCol = parseInt(from.split(",")[0]);
     const fromRow = parseInt(from.split(",")[1]);
@@ -92,11 +94,11 @@ export const Board = () => {
         if (
           (fromCol == 1 || fromCol == 6) &&
           ((initPiece[from].includes("150/w") && toCol - fromCol == -2) ||
-            (initPiece[from].includes("150/b") && toCol - fromCol == 2))
+            (initPiece[from].includes("150/b") && toCol - fromCol == 2)) // Allow two-square move from the starting position
         ) {
           return true;
         } else if (
-          (initPiece[from].includes("150/w") && toCol - fromCol == -1) ||
+          (initPiece[from].includes("150/w") && toCol - fromCol == -1) || // Allow one-square move forward
           (initPiece[from].includes("150/b") && toCol - fromCol == 1)
         ) {
           console.log(fromCol, fromRow, toCol, toRow);
@@ -108,16 +110,16 @@ export const Board = () => {
         initPiece[to] &&
         ((initPiece[from].includes("150/b") &&
           initPiece[to].includes("150/w")) ||
-          (initPiece[from].includes("150/w") &&
+          (initPiece[from].includes("150/w") && // Allow diagonal capture
             initPiece[to].includes("150/b")))
       ) {
         console.log(fromCol, fromRow, toCol, toRow);
         if (
           (piece.includes("150/w") &&
-            fromRow - toRow == -1 &&
-            fromCol - toCol == 1) ||
+            Math.abs(fromRow - toRow) == 1 &&
+            fromCol - toCol == 1) || // Allow diagonal capture for white pawns
           (piece.includes("150/b") &&
-            fromRow - toRow == -1 &&
+            Math.abs(fromRow - toRow) == 1 &&
             fromCol - toCol == -1)
         ) {
           return true;
